@@ -1,4 +1,5 @@
 import pytest
+from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.inventory_page import InventoryPage
 from pages.cart_page import CartPage
@@ -34,3 +35,36 @@ def test_missing_first_name_shows_error(checkout):
     page, _ = checkout
     page.fill_info("", "Doe", "12345")
     assert "First Name is required" in page.error_message()
+
+
+@pytest.mark.parametrize("first,last,zip_,msg", [
+    ("John", "", "12345", "Last Name is required"),
+    ("John", "Doe", "", "Postal Code is required"),
+])
+def test_missing_field_shows_error(checkout, first, last, zip_, msg):
+    page, _ = checkout
+    page.fill_info(first, last, zip_)
+    assert msg in page.error_message()
+
+
+def test_cancel_on_step_one_returns_to_cart(checkout):
+    page, _ = checkout
+    page.cancel()
+    assert page.wait.until(EC.url_contains("/cart.html"))
+    assert CartPage(page.driver).item_names() == ITEMS
+
+
+def test_cancel_on_overview_returns_to_inventory(checkout):
+    page, _ = checkout
+    page.fill_info("John", "Doe", "12345")
+    page.cancel()
+    assert page.wait.until(EC.url_contains("/inventory.html"))
+
+
+def test_back_home_clears_cart(checkout):
+    page, _ = checkout
+    page.fill_info("John", "Doe", "12345")
+    page.finish()
+    page.back_home()
+    assert page.wait.until(EC.url_contains("/inventory.html"))
+    assert InventoryPage(page.driver).cart_count() == 0

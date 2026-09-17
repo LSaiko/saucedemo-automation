@@ -25,3 +25,14 @@ def test_wrong_password(login_page):
 def test_empty_fields(login_page):
     login_page.login("", "")
     assert "Username is required" in login_page.error_message()
+
+
+def test_empty_password(login_page):
+    login_page.login("standard_user", "")
+    assert "Password is required" in login_page.error_message()
+
+
+def test_performance_glitch_user_logs_in(login_page):
+    # ponytail: only asserts it eventually lands; the 15s page wait already covers the glitch delay
+    login_page.login("performance_glitch_user", "secret_sauce")
+    assert login_page.is_logged_in()

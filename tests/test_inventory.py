@@ -39,3 +39,14 @@ def test_sort_by_price(inventory):
     inventory.sort_by("hilo")
     prices = inventory.item_prices()
     assert prices == sorted(prices, reverse=True)
+
+
+def test_item_detail_and_back(inventory):
+    assert inventory.open_item(BACKPACK) == BACKPACK
+    inventory.back_to_products()
+    assert len(inventory.item_names()) == 6
+
+
+def test_logout(inventory):
+    inventory.logout()
+    assert inventory.driver.current_url == "https://www.saucedemo.com/"

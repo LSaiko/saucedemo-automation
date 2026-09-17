@@ -14,6 +14,10 @@ class InventoryPage(BasePage):
     SORT_SELECT = (By.CLASS_NAME, "product_sort_container")
     CART_BADGE = (By.CLASS_NAME, "shopping_cart_badge")
     CART_LINK = (By.CLASS_NAME, "shopping_cart_link")
+    MENU_BUTTON = (By.ID, "react-burger-menu-btn")
+    LOGOUT_LINK = (By.ID, "logout_sidebar_link")
+    DETAIL_NAME = (By.CLASS_NAME, "inventory_details_name")
+    BACK_TO_PRODUCTS = (By.ID, "back-to-products")
 
     @staticmethod
     def _slug(name):
@@ -38,6 +42,19 @@ class InventoryPage(BasePage):
     def cart_count(self):
         badges = self.driver.find_elements(*self.CART_BADGE)
         return int(badges[0].text) if badges else 0
+
+    def open_item(self, name):
+        self.click((By.LINK_TEXT, name))
+        return self.text_of(self.DETAIL_NAME)
+
+    def back_to_products(self):
+        self.click(self.BACK_TO_PRODUCTS)
+        self.wait.until(EC.url_contains("/inventory.html"))
+
+    def logout(self):
+        self.click(self.MENU_BUTTON)
+        self.click(self.LOGOUT_LINK)
+        self.wait.until(EC.url_to_be("https://www.saucedemo.com/"))
 
     def go_to_cart(self):
         self.click(self.CART_LINK)

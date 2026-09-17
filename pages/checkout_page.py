@@ -14,6 +14,8 @@ class CheckoutPage(BasePage):
     TAX = (By.CLASS_NAME, "summary_tax_label")
     TOTAL = (By.CLASS_NAME, "summary_total_label")
     COMPLETE_HEADER = (By.CLASS_NAME, "complete-header")
+    CANCEL_BUTTON = (By.ID, "cancel")
+    BACK_HOME_BUTTON = (By.ID, "back-to-products")
 
     def fill_info(self, first, last, postal):
         self.type(self.FIRST_NAME, first)
@@ -39,6 +41,12 @@ class CheckoutPage(BasePage):
 
     def finish(self):
         self.click(self.FINISH_BUTTON)
+
+    def cancel(self):
+        self.click(self.CANCEL_BUTTON)
+
+    def back_home(self):
+        self.click(self.BACK_HOME_BUTTON)
 
     def complete_message(self):
         return self.text_of(self.COMPLETE_HEADER)
