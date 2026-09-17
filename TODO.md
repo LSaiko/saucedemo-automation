@@ -9,7 +9,7 @@
 - [x] Chrome installed locally
 - [x] Parallel runs via pytest-xdist (`-n auto`): ~60s local, ~56s CI
 - [x] GitHub Actions bumped to v7 (no Node 20 warnings)
-- [x] CI matrix: Python 3.10–3.14
+- [x] CI matrix: Python 3.10–3.14 on Linux + Windows/macOS on 3.14
 
 ## Manual
 - [ ] Pin the repo on your GitHub profile (no API for this): github.com/LSaiko → "Customize your pins" → `saucedemo-automation`
@@ -17,4 +17,3 @@
 ## Optional / when needed
 - [ ] `visual_user` layout checks — needs a visual-diff tool (e.g. `pytest-playwright` snapshots or Applitools)
 - [ ] Move credentials to `.env` (gitignored) if real accounts are ever used; saucedemo's public ones are fine hardcoded
-- [ ] OS matrix (windows/macos) in CI if cross-platform matters
