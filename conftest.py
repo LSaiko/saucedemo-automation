@@ -20,10 +20,10 @@ def driver(request):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    """Attach a screenshot to the pytest-html report when a test fails."""
+    """Attach a screenshot to the pytest-html report on failure (and on xfail, so known site bugs are captured)."""
     report = (yield).get_result()
     drv = getattr(item, "_driver", None)
-    if report.when == "call" and report.failed and drv:
+    if report.when == "call" and (report.failed or hasattr(report, "wasxfail")) and drv:
         extras = getattr(report, "extras", [])
         extras.append(pytest_html.extras.image(drv.get_screenshot_as_base64()))
         extras.append(pytest_html.extras.url(drv.current_url))
