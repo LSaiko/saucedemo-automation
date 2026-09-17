@@ -7,6 +7,7 @@
 - [x] README, results (`docs/test-results.md`)
 - [x] Pushed to GitHub, CI green on every push
 - [x] Chrome installed locally
+- [x] Parallel runs via pytest-xdist (`-n auto`): ~60s local, ~56s CI
 
 ## Manual
 - [ ] Pin the repo on your GitHub profile (no API for this): github.com/LSaiko → "Customize your pins" → `saucedemo-automation`
