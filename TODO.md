@@ -8,6 +8,7 @@
 - [x] Pushed to GitHub, CI green on every push
 - [x] Chrome installed locally
 - [x] Parallel runs via pytest-xdist (`-n auto`): ~60s local, ~56s CI
+- [x] GitHub Actions bumped to v7 (no Node 20 warnings)
 
 ## Manual
 - [ ] Pin the repo on your GitHub profile (no API for this): github.com/LSaiko → "Customize your pins" → `saucedemo-automation`
