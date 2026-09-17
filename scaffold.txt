@@ -1,0 +1,14 @@
+saucedemo-automation/
+├── pages/
+│   ├── login_page.py
+│   ├── inventory_page.py
+│   ├── cart_page.py
+│   └── checkout_page.py
+├── tests/
+│   ├── test_login.py
+│   ├── test_cart.py
+│   └── test_checkout.py
+├── conftest.py          # browser fixture lives here
+├── requirements.txt
+├── pytest.ini
+└── README.md

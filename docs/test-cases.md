@@ -1,0 +1,41 @@
+# Test cases (written from a manual walkthrough of saucedemo.com)
+
+Legend: ✅ automated · ⏳ not yet automated
+
+## Login (`/`)
+| ID | Steps | Expected | Test |
+|---|---|---|---|
+| L1 | standard_user / secret_sauce | redirect to `/inventory.html` | ✅ `test_valid_login` |
+| L2 | locked_out_user / secret_sauce | error "Sorry, this user has been locked out." | ✅ `test_locked_out_user` |
+| L3 | standard_user / wrong | error "Username and password do not match any user in this service" | ✅ `test_wrong_password` |
+| L4 | submit with both fields empty | error "Username is required" | ✅ `test_empty_fields` |
+| L5 | username only, empty password | error "Password is required" | ⏳ |
+| L6 | performance_glitch_user | logs in but slowly (>5s) | ⏳ |
+
+## Inventory (`/inventory.html`)
+| ID | Steps | Expected | Test |
+|---|---|---|---|
+| I1 | click "Add to cart" on one item | cart badge shows 1, button becomes "Remove" | ✅ `test_add_one_item` |
+| I2 | add two, remove one | badge shows 1 | ✅ `test_add_two_remove_one` |
+| I3 | sort Name (A to Z) / (Z to A) | items alphabetically ordered / reversed | ✅ `test_sort_by_name` |
+| I4 | sort Price (low to high) / (high to low) | prices ascending / descending | ✅ `test_sort_by_price` |
+| I5 | click item name | item detail page, back button returns to list | ⏳ |
+| I6 | burger menu → Logout | back to login page | ⏳ |
+
+## Cart (`/cart.html`)
+| ID | Steps | Expected | Test |
+|---|---|---|---|
+| C1 | add two items, open cart | both listed with name, price, qty 1 | ✅ `test_cart_shows_added_items` |
+| C2 | click Remove on one | only the other remains | ✅ `test_remove_item_in_cart` |
+| C3 | Continue Shopping | back to inventory, badge count preserved | ✅ `test_continue_shopping_preserves_cart` |
+| C4 | Checkout with empty cart | proceeds to step one (site allows it) | ⏳ |
+
+## Checkout (`/checkout-step-one.html` → `-two` → `-complete`)
+| ID | Steps | Expected | Test |
+|---|---|---|---|
+| K1 | fill first/last/zip, Continue, Finish | overview subtotal = sum of prices, total = subtotal + tax, "Thank you for your order!" | ✅ `test_full_checkout_flow` |
+| K2 | empty first name | error "Error: First Name is required" | ✅ `test_missing_first_name_shows_error` |
+| K3 | empty last name / empty zip | "Last Name is required" / "Postal Code is required" | ⏳ |
+| K4 | Cancel on step one | back to cart, items intact | ⏳ |
+| K5 | Cancel on overview | back to inventory | ⏳ |
+| K6 | Back Home on complete page | inventory, cart badge cleared | ⏳ |

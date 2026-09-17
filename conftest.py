@@ -1,4 +1,3 @@
-import shutil
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -7,15 +6,28 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 @pytest.fixture
-def driver():
+def driver(request):
     opts = Options()
     opts.add_argument("--headless=new")
     opts.add_argument("--window-size=1280,900")
     # saucedemo triggers Chrome's password-leak popup on login; disable it
     opts.add_experimental_option("prefs", {"credentials_enable_service": False, "profile.password_manager_leak_detection": False})
-    # ponytail: Selenium Manager downloads Chrome for Testing if no Chrome is installed;
-    # webdriver-manager only resolves the driver, so use it only when a local Chrome exists
-    service = Service(ChromeDriverManager().install()) if shutil.which("chrome") else None
-    drv = webdriver.Chrome(service=service, options=opts)
+    drv = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
+    request.node._driver = drv  # for the screenshot hook below
     yield drv
     drv.quit()
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Attach a screenshot to the pytest-html report when a test fails."""
+    report = (yield).get_result()
+    drv = getattr(item, "_driver", None)
+    if report.when == "call" and report.failed and drv:
+        extras = getattr(report, "extras", [])
+        extras.append(pytest_html.extras.image(drv.get_screenshot_as_base64()))
+        extras.append(pytest_html.extras.url(drv.current_url))
+        report.extras = extras
+
+
+pytest_html = pytest.importorskip("pytest_html")
