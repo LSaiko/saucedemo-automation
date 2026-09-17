@@ -1,0 +1,22 @@
+# test output
+reports/
+__pycache__/
+.pytest_cache/
+
+# environments
+.venv/
+venv/
+
+# secrets / local config — never commit credentials
+.env
+.env.*
+*.pem
+*.key
+secrets*.json
+credentials*.json
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
