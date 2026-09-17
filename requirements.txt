@@ -2,3 +2,4 @@ selenium>=4.25
 pytest>=8
 pytest-html>=4
 webdriver-manager>=4
+pytest-xdist>=3
