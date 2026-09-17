@@ -1,5 +1,6 @@
 import pytest
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -25,8 +26,11 @@ def pytest_runtest_makereport(item, call):
     drv = getattr(item, "_driver", None)
     if report.when == "call" and (report.failed or hasattr(report, "wasxfail")) and drv:
         extras = getattr(report, "extras", [])
-        extras.append(pytest_html.extras.image(drv.get_screenshot_as_base64()))
-        extras.append(pytest_html.extras.url(drv.current_url))
+        try:
+            extras.append(pytest_html.extras.image(drv.get_screenshot_as_base64()))
+            extras.append(pytest_html.extras.url(drv.current_url))
+        except WebDriverException as e:  # e.g. open alert or hung renderer; a report extra must never kill the run
+            extras.append(pytest_html.extras.text(f"screenshot unavailable: {e.__class__.__name__}"))
         report.extras = extras
 
 
