@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from .base_page import BasePage
 
@@ -52,7 +53,14 @@ class InventoryPage(BasePage):
         self.wait.until(EC.url_contains("/inventory.html"))
 
     def logout(self):
-        self.click(self.MENU_BUTTON)
+        # the burger click can be swallowed while React is still hydrating (seen on slow CI runners); re-click
+        for _ in range(3):
+            self.click(self.MENU_BUTTON)
+            try:
+                WebDriverWait(self.driver, 3).until(EC.visibility_of_element_located(self.LOGOUT_LINK))
+                break
+            except TimeoutException:
+                pass
         self.click(self.LOGOUT_LINK)
         self.wait.until(EC.url_to_be("https://www.saucedemo.com/"))
 
