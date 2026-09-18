@@ -1,3 +1,6 @@
+# saucedemo-automation
+
+Selenium + pytest UI suite for [saucedemo.com](https://www.saucedemo.com): Page Objects, headless Chrome, pytest-html with screenshot-on-failure, pixel-diff visual regression. **36 tests: 32 pass, 4 xfail (known site bugs)**; cases in [docs/test-cases.md](docs/test-cases.md), latest results in [docs/test-results.md](docs/test-results.md).
 
 ## How this was built
 
@@ -9,6 +12,9 @@
 6. Added pytest-html reporting with screenshot-on-failure
 7. Wrote this README
 8. Pushed to GitHub and pinned the repo
+9. Parallel runs via pytest-xdist; CI matrix Python 3.10-3.14 on Linux + Windows/macOS on 3.14
+10. Visual regression: `visual/visual_utils.py` (capture + Pillow compare, checked in isolation first), one login-page test confirmed stable on a second run, then inventory + cart, then the `--update-baselines` flag
+11. Reviewed and committed the three baselines; first cross-OS CI run showed the font-rendering mismatch, so the visual tests are Windows-only for now (see below)
 
 ## Visual regression
 
