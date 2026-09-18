@@ -27,3 +27,8 @@ jobs:
         with:
           name: pytest-html-report-${{ matrix.os }}-py${{ matrix.python-version }}
           path: reports/report.html
+      - uses: actions/upload-artifact@v7
+        if: failure() && matrix.os == 'windows-latest'
+        with:
+          name: visual-diffs
+          path: visual/diffs/

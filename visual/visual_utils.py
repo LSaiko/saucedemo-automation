@@ -15,7 +15,9 @@ def capture_screenshot(driver, name):
     baseline = BASELINES / f"{name}.png"
     target = DIFFS / f"{name}.png" if baseline.exists() else baseline
     target.parent.mkdir(parents=True, exist_ok=True)
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return [...document.images].every(i => i.complete)"))
+    # fonts too: a shot taken while the web font is still loading renders fallback glyphs and blows the threshold
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script(
+        "return document.fonts.status === 'loaded' && [...document.images].every(i => i.complete)"))
     # ponytail: CDP call instead of resizing the window; Chrome-only, same as the driver fixture
     png = driver.execute_cdp_cmd("Page.captureScreenshot", {"captureBeyondViewport": True})["data"]
     target.write_bytes(base64.b64decode(png))
