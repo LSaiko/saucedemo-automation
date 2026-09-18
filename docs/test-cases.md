@@ -50,4 +50,13 @@ All cases automated.
 | P5 | error_user sorts | "Sorting is broken!" alert (site bug) | ✅ xfail `test_error_user_sort` |
 | P6 | error_user clicks Finish | nothing happens (site bug) | ✅ xfail `test_error_user_finish` |
 
+## Visual (`tests/visual/`, Windows only)
+| ID | Steps | Expected | Test |
+|---|---|---|---|
+| V1 | open login page, full-page screenshot | ≤2% pixels differ from `visual/baselines/login_page.png` | ✅ `test_login_page` |
+| V2 | standard_user login, product grid loaded, screenshot | ≤2% pixels differ from `inventory_page.png` | ✅ `test_inventory_page` |
+| V3 | add Backpack + Bike Light, open cart, screenshot | ≤2% pixels differ from `cart_page.png` (badge 2, two rows) | ✅ `test_cart_page_with_items` |
+
+A pixel counts as changed only if any RGB channel differs by >32/255. Missing baseline → test skips after writing it; `--update-baselines` rewrites them. Skipped on Linux/macOS (font rendering; see README).
+
 Known site bugs are `xfail(strict=True)`: a screenshot of the broken state is attached to the report, and the test turns red if saucedemo ever fixes it.
