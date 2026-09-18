@@ -1,8 +1,8 @@
 # Functionality test plan — results
 
-**Date:** 2026-09-18 · **Commit:** `9e8fe04` · **CI:** [run 35323533374](https://github.com/LSaiko/saucedemo-automation/actions/runs/35323533374) (headless Chrome, 7-job matrix)
+**Date:** 2026-09-18 · **Commit:** `0621250` · **CI:** [run 35326622767](https://github.com/LSaiko/saucedemo-automation/actions/runs/35326622767) (headless Chrome, 7-job matrix)
 
-**37 tests: 32 passed, 5 xfailed (known site bugs), 0 failed** on windows-latest. Linux/macOS jobs: 29 passed, 4 skipped (visual tests are Windows-only, see below), 4 xfailed.
+**37 tests: 32 passed, 5 xfailed (known site bugs), 0 failed — 168s** on windows-latest. Linux/macOS jobs: 29 passed, 4 skipped (visual tests are Windows-only, see below), 4 xfailed — 54s.
 
 Test cases are defined in [test-cases.md](test-cases.md).
 
@@ -34,7 +34,7 @@ Two transient `TimeoutException`s (cold Chrome start + slow first page load) see
 
 Two more flakes surfaced once the CI matrix grew to 7 jobs per push:
 
-1. `test_login_page` (visual) failed on Windows in 3 of 4 consecutive runs — the screenshot fired before saucedemo's web font finished loading, so fallback glyphs pushed the diff past 2%. Fixed by also waiting for `document.fonts.status === 'loaded'` before capture (`8ae31b3`); 0 of 2 runs since.
+1. `test_login_page` (visual) failed on Windows in 3 of 4 consecutive runs — the screenshot fired before saucedemo's web font finished loading, so fallback glyphs pushed the diff past 2%. Fixed by also waiting for `document.fonts.status === 'loaded'` before capture (`8ae31b3`); 0 of 5 runs since.
 2. `test_continue_shopping_preserves_cart` hit `StaleElementReferenceException` once on Ubuntu — `InventoryPage.cart_count()` read `.text` on a badge React had re-rendered. Fixed by running find + read inside `retry_wait` (`9e8fe04`).
 
 `visual/diffs/` is now uploaded as a CI artifact when the Windows job fails, so future visual flakes can be inspected rather than guessed at.
