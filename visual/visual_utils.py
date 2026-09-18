@@ -10,9 +10,10 @@ DIFFS = Path(__file__).parent / "diffs"
 PIXEL_TOLERANCE = 32  # per-channel 0-255; absorbs anti-aliasing jitter without hiding real changes
 
 
-def capture_screenshot(driver, name):
-    """Full-page PNG. First run writes the baseline; later runs write to diffs/. Returns the path written."""
-    baseline = BASELINES / f"{name}.png"
+def capture_screenshot(driver, name, baseline=None):
+    """Full-page PNG. First run writes the baseline; later runs write to diffs/. Returns the path written.
+    `baseline` lets a shot be compared against another page's baseline (e.g. visual_user vs standard_user)."""
+    baseline = baseline or BASELINES / f"{name}.png"
     target = DIFFS / f"{name}.png" if baseline.exists() else baseline
     target.parent.mkdir(parents=True, exist_ok=True)
     # fonts too: a shot taken while the web font is still loading renders fallback glyphs and blows the threshold

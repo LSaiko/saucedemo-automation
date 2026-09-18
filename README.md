@@ -1,6 +1,6 @@
 # saucedemo-automation
 
-Selenium + pytest UI suite for [saucedemo.com](https://www.saucedemo.com): Page Objects, headless Chrome, pytest-html with screenshot-on-failure, pixel-diff visual regression. **36 tests: 32 pass, 4 xfail (known site bugs)**; cases in [docs/test-cases.md](docs/test-cases.md), latest results in [docs/test-results.md](docs/test-results.md).
+Selenium + pytest UI suite for [saucedemo.com](https://www.saucedemo.com): Page Objects, headless Chrome, pytest-html with screenshot-on-failure, pixel-diff visual regression. **37 tests: 32 pass, 5 xfail (known site bugs)**; cases in [docs/test-cases.md](docs/test-cases.md), latest results in [docs/test-results.md](docs/test-results.md).
 
 ## How this was built
 
@@ -24,7 +24,7 @@ How it works:
 2. `capture_screenshot` takes a full-page PNG via Chrome DevTools `Page.captureScreenshot` with `captureBeyondViewport`
 3. `compare_screenshots` does a Pillow pixel diff against the baseline
 4. Baselines live in `visual/baselines/` (committed); each run writes the current shot plus a `<name>_diff.png` mask (white = changed pixels) to `visual/diffs/` (gitignored)
-5. Tests (`tests/visual/`): login page, inventory page, cart with two items
+5. Tests (`tests/visual/`): login page, inventory page, cart with two items, plus `visual_user`'s inventory compared against the `standard_user` baseline (`xfail(strict=True)` — the persona's layout is deliberately broken and the diff catches it at ~3% changed)
 
 Threshold:
 

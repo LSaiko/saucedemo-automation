@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-18 · **Commit:** `9e8fe04` · **CI:** [run 35323533374](https://github.com/LSaiko/saucedemo-automation/actions/runs/35323533374) (headless Chrome, 7-job matrix)
 
-**36 tests: 32 passed, 4 xfailed (known site bugs), 0 failed — 118s** on windows-latest (local Windows run: same result, 95s). Linux/macOS jobs: 29 passed, 3 skipped (visual tests are Windows-only, see below), 4 xfailed — 66s.
+**37 tests: 32 passed, 5 xfailed (known site bugs), 0 failed** on windows-latest. Linux/macOS jobs: 29 passed, 4 skipped (visual tests are Windows-only, see below), 4 xfailed.
 
 Test cases are defined in [test-cases.md](test-cases.md).
 
@@ -13,7 +13,7 @@ Test cases are defined in [test-cases.md](test-cases.md).
 | Cart | C1–C4 | 4 | – | contents, remove, continue shopping keeps cart, empty-cart checkout allowed |
 | Checkout | K1–K6 | 7 | – | totals verified (subtotal = Σ prices, total = subtotal + tax), first/last/zip validation, cancel from step one/overview, back-home clears cart |
 | Personas | P1–P6 | 6 | 4 | see defects below |
-| Visual | V1–V3 | 3 | – | login, inventory, cart-with-items screenshots vs committed baselines; ≤2% pixel change, 32/255 per-channel tolerance |
+| Visual | V1–V4 | 3 | 1 | login, inventory, cart-with-items screenshots vs committed baselines; ≤2% pixel change, 32/255 per-channel tolerance. V4: visual_user inventory vs standard baseline |
 
 ## Site defects found
 
@@ -24,6 +24,7 @@ All are pre-existing, intentional saucedemo demo behaviour. Each is marked `xfai
 3. `error_user` — sorting raises a "Sorting is broken!" alert (P5)
 4. `error_user` — Finish does not complete the order (P6)
 5. Any user — an empty cart can proceed to checkout step one (C4, asserted as current behaviour, not xfail)
+6. `visual_user` — inventory layout broken: dog photo for the backpack, cart icon and product titles shifted, randomised prices, last Add-to-cart button offset (V4). Pixel diff vs the standard baseline: 2.98% changed, i.e. caught with ~1 point of margin over the 2% threshold
 
 No fixes required on the suite side: the defects are in the application under test.
 
@@ -44,4 +45,4 @@ Baselines were captured on Windows 11 / headless Chrome at 1280×900 and committ
 
 ## Not covered
 
-`visual_user` layout defects — the pixel-diff tooling now exists; a `visual_user` login compared against the `standard_user` baselines is the remaining step.
+`visual_user` on pages other than inventory (login/cart look identical for that persona).

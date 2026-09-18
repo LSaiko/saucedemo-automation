@@ -12,19 +12,19 @@ pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="visual baseline
 
 @pytest.fixture
 def check_visual(driver, request):
-    def _check(name):
-        baseline = BASELINES / f"{name}.png"
-        if request.config.getoption("--update-baselines"):
+    def _check(name, baseline_name=None):
+        baseline = BASELINES / f"{baseline_name or name}.png"
+        if request.config.getoption("--update-baselines") and not baseline_name:
             baseline.unlink(missing_ok=True)  # capture_screenshot then writes a fresh baseline
-        current = capture_screenshot(driver, name)
+        current = capture_screenshot(driver, name, baseline)
         if current == baseline:
             pytest.skip(f"no baseline existed; wrote {baseline} - review and commit it")
         assert compare_screenshots(baseline, current), f"{name} differs from baseline; see {current.parent}"
     return _check
 
 
-def _login(driver):
-    LoginPage(driver).open().login("standard_user", "secret_sauce")
+def _login(driver, user="standard_user"):
+    LoginPage(driver).open().login(user, "secret_sauce")
     inventory = InventoryPage(driver)
     inventory.item_names()  # wait for the product grid before shooting
     return inventory
@@ -47,3 +47,9 @@ def test_cart_page_with_items(driver, check_visual):
     inventory.go_to_cart()
     CartPage(driver).item_names()
     check_visual("cart_page")
+
+
+@pytest.mark.xfail(strict=True, reason="visual_user: inventory layout is deliberately broken (shifted cart icon/buttons, wrong product image)")
+def test_visual_user_inventory_matches_standard(driver, check_visual):
+    _login(driver, "visual_user")
+    check_visual("visual_user_inventory", baseline_name="inventory_page")

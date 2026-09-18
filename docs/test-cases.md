@@ -56,6 +56,7 @@ All cases automated.
 | V1 | open login page, full-page screenshot | ≤2% pixels differ from `visual/baselines/login_page.png` | ✅ `test_login_page` |
 | V2 | standard_user login, product grid loaded, screenshot | ≤2% pixels differ from `inventory_page.png` | ✅ `test_inventory_page` |
 | V3 | add Backpack + Bike Light, open cart, screenshot | ≤2% pixels differ from `cart_page.png` (badge 2, two rows) | ✅ `test_cart_page_with_items` |
+| V4 | visual_user login, inventory screenshot vs the standard_user `inventory_page.png` | layout broken: dog image, shifted cart icon/titles/button, random prices (site bug, ~3% changed) | ✅ xfail `test_visual_user_inventory_matches_standard` |
 
 A pixel counts as changed only if any RGB channel differs by >32/255. Missing baseline → test skips after writing it; `--update-baselines` rewrites them. Skipped on Linux/macOS (font rendering; see README).
 
