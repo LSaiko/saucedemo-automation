@@ -6,6 +6,11 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 
+def pytest_addoption(parser):
+    parser.addoption("--update-baselines", action="store_true",
+                     help="overwrite visual/baselines/*.png with fresh screenshots instead of comparing")
+
+
 @pytest.fixture
 def driver(request):
     opts = Options()

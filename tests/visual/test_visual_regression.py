@@ -6,10 +6,12 @@ from visual.visual_utils import BASELINES, capture_screenshot, compare_screensho
 
 
 @pytest.fixture
-def check_visual(driver):
+def check_visual(driver, request):
     def _check(name):
-        current = capture_screenshot(driver, name)
         baseline = BASELINES / f"{name}.png"
+        if request.config.getoption("--update-baselines"):
+            baseline.unlink(missing_ok=True)  # capture_screenshot then writes a fresh baseline
+        current = capture_screenshot(driver, name)
         if current == baseline:
             pytest.skip(f"no baseline existed; wrote {baseline} - review and commit it")
         assert compare_screenshots(baseline, current), f"{name} differs from baseline; see {current.parent}"
