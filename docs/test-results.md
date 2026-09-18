@@ -1,8 +1,8 @@
 # Functionality test plan — results
 
-**Date:** 2026-09-18 · **Commit:** `17609c6` · **CI:** [run 35319814885](https://github.com/LSaiko/saucedemo-automation/actions/runs/35319814885) (headless Chrome, 7-job matrix)
+**Date:** 2026-09-18 · **Commit:** `9e8fe04` · **CI:** [run 35323533374](https://github.com/LSaiko/saucedemo-automation/actions/runs/35323533374) (headless Chrome, 7-job matrix)
 
-**36 tests: 32 passed, 4 xfailed (known site bugs), 0 failed — 98s** on windows-latest (local Windows run: same result, 95s). Linux/macOS jobs: 29 passed, 3 skipped (visual tests are Windows-only, see below), 4 xfailed — 47s.
+**36 tests: 32 passed, 4 xfailed (known site bugs), 0 failed — 118s** on windows-latest (local Windows run: same result, 95s). Linux/macOS jobs: 29 passed, 3 skipped (visual tests are Windows-only, see below), 4 xfailed — 66s.
 
 Test cases are defined in [test-cases.md](test-cases.md).
 
@@ -30,6 +30,13 @@ No fixes required on the suite side: the defects are in the application under te
 ## Stability
 
 Two transient `TimeoutException`s (cold Chrome start + slow first page load) seen during initial development; resolved by raising the base explicit wait from 10s to 15s. Zero flakes since across ~10 local and 3 CI runs.
+
+Two more flakes surfaced once the CI matrix grew to 7 jobs per push:
+
+1. `test_login_page` (visual) failed on Windows in 3 of 4 consecutive runs — the screenshot fired before saucedemo's web font finished loading, so fallback glyphs pushed the diff past 2%. Fixed by also waiting for `document.fonts.status === 'loaded'` before capture (`8ae31b3`); 0 of 2 runs since.
+2. `test_continue_shopping_preserves_cart` hit `StaleElementReferenceException` once on Ubuntu — `InventoryPage.cart_count()` read `.text` on a badge React had re-rendered. Fixed by running find + read inside `retry_wait` (`9e8fe04`).
+
+`visual/diffs/` is now uploaded as a CI artifact when the Windows job fails, so future visual flakes can be inspected rather than guessed at.
 
 ## Visual regression
 
