@@ -1,8 +1,8 @@
 # Functionality test plan — results
 
-**Date:** 2026-09-17 · **Commit:** `c80c324` · **CI:** [run 35177403705](https://github.com/LSaiko/saucedemo-automation/actions/runs/35177403705) (ubuntu-latest, headless Chrome)
+**Date:** 2026-09-18 · **Commit:** `17609c6` · **CI:** [run 35319814885](https://github.com/LSaiko/saucedemo-automation/actions/runs/35319814885) (headless Chrome, 7-job matrix)
 
-**33 tests: 29 passed, 4 xfailed (known site bugs), 0 failed — 73s** (local Windows run: same result, 130s)
+**36 tests: 32 passed, 4 xfailed (known site bugs), 0 failed — 98s** on windows-latest (local Windows run: same result, 95s). Linux/macOS jobs: 29 passed, 3 skipped (visual tests are Windows-only, see below), 4 xfailed — 47s.
 
 Test cases are defined in [test-cases.md](test-cases.md).
 
@@ -13,6 +13,7 @@ Test cases are defined in [test-cases.md](test-cases.md).
 | Cart | C1–C4 | 4 | – | contents, remove, continue shopping keeps cart, empty-cart checkout allowed |
 | Checkout | K1–K6 | 7 | – | totals verified (subtotal = Σ prices, total = subtotal + tax), first/last/zip validation, cancel from step one/overview, back-home clears cart |
 | Personas | P1–P6 | 6 | 4 | see defects below |
+| Visual | V1–V3 | 3 | – | login, inventory, cart-with-items screenshots vs committed baselines; ≤2% pixel change, 32/255 per-channel tolerance |
 
 ## Site defects found
 
@@ -30,6 +31,10 @@ No fixes required on the suite side: the defects are in the application under te
 
 Two transient `TimeoutException`s (cold Chrome start + slow first page load) seen during initial development; resolved by raising the base explicit wait from 10s to 15s. Zero flakes since across ~10 local and 3 CI runs.
 
+## Visual regression
+
+Baselines were captured on Windows 11 / headless Chrome at 1280×900 and committed. On the first cross-OS run all three visual tests failed on Ubuntu and macOS purely from font rendering (DirectWrite vs FreeType/CoreText), while Windows matched within tolerance; run-to-run noise on the same machine measured 0.0% changed pixels (max 4/255 delta in product images). The tests are therefore `skipif` off Windows; per-OS baselines are the follow-up (see TODO.md).
+
 ## Not covered
 
-`visual_user` layout defects — require pixel-diff/visual testing tooling.
+`visual_user` layout defects — the pixel-diff tooling now exists; a `visual_user` login compared against the `standard_user` baselines is the remaining step.
