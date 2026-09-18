@@ -41,8 +41,8 @@ class InventoryPage(BasePage):
         Select(self.find(self.SORT_SELECT)).select_by_value(value)
 
     def cart_count(self):
-        badges = self.driver.find_elements(*self.CART_BADGE)
-        return int(badges[0].text) if badges else 0
+        # badge can re-render between find and .text (stale); retry_wait re-runs on stale. Tuple-wrap so 0 counts as done
+        return self.retry_wait.until(lambda d: (int(b[0].text) if (b := d.find_elements(*self.CART_BADGE)) else 0,))[0]
 
     def open_item(self, name):
         self.click((By.LINK_TEXT, name))
