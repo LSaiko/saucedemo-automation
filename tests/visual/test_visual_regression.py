@@ -1,8 +1,13 @@
+import sys
+
 import pytest
 from pages.login_page import LoginPage
 from pages.inventory_page import InventoryPage
 from pages.cart_page import CartPage
 from visual.visual_utils import BASELINES, capture_screenshot, compare_screenshots
+
+# ponytail: baselines captured on Windows only; per-OS baseline dirs when Linux/mac visual coverage is needed (README)
+pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="visual baselines captured on Windows; see README")
 
 
 @pytest.fixture

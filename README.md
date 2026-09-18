@@ -38,5 +38,6 @@ Known limitation - fonts:
 
 - Font rendering differs between local (Windows, DirectWrite) and CI (Ubuntu, FreeType): glyph shapes, hinting and subpixel positioning all differ, so baselines from one OS will not match another pixel-for-pixel. Text-heavy pages can exceed 2% from fonts alone
 - Mitigations: generate baselines on the same OS/Chrome that runs the comparison (regenerate in CI, or keep per-OS baseline dirs), or pin the Chrome version
-- Current baselines: Windows 11 / Chrome headless at 1280x900
+- Current baselines: Windows 11 / Chrome headless at 1280x900. The visual tests are therefore `skipif(sys.platform != "win32")`; in CI only the Windows job runs them
+- Future: per-OS baseline dirs (`visual/baselines/<platform>/`, generated once per runner with `--update-baselines`) would give Linux/macOS coverage too
 - The saucedemo footer shows the current year, so baselines drift by a handful of pixels every January. Well under the threshold; regenerate if it ever tips over

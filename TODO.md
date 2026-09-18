@@ -17,3 +17,4 @@
 ## Optional / when needed
 - [ ] `visual_user` layout checks — needs a visual-diff tool (e.g. `pytest-playwright` snapshots or Applitools)
 - [ ] Move credentials to `.env` (gitignored) if real accounts are ever used; saucedemo's public ones are fine hardcoded
+- Visual regression: per-OS baseline dirs so Linux/macOS CI jobs run the visual tests (currently skipif win32 only)
