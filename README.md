@@ -15,6 +15,15 @@ Selenium + pytest UI suite for [saucedemo.com](https://www.saucedemo.com): Page 
 9. Parallel runs via pytest-xdist; CI matrix Python 3.10-3.14 on Linux + Windows/macOS on 3.14
 10. Visual regression: `visual/visual_utils.py` (capture + Pillow compare, checked in isolation first), one login-page test confirmed stable on a second run, then inventory + cart, then the `--update-baselines` flag
 11. Reviewed and committed the three baselines; first cross-OS CI run showed the font-rendering mismatch, so the visual tests are Windows-only for now (see below)
+12. Flaky-test retries via pytest-rerunfailures, with a `no_rerun` opt-out for validation tests (see below)
+
+## Flaky Test Handling
+
+- A failing test is retried up to 2 times, 3s apart (`--reruns 2 --reruns-delay 3` in `pytest.ini`) before it counts as a failure
+- A test that passes only on a retry is reported as **flaky**, not passed: `FLAKY` / `f` in the terminal, a Flaky column in `reports/report.html`, and each failed attempt kept as a Rerun row with its screenshot
+- Tests marked `@pytest.mark.no_rerun` (the login and checkout validation-error assertions) are never retried: a first-try failure there is a real bug
+- `pytest --reruns 0` turns retries off for a debugging run
+- What counts as flaky vs broken, why 2 reruns, and the exclusion list: [docs/flaky-policy.md](docs/flaky-policy.md)
 
 ## Visual regression
 

@@ -11,6 +11,13 @@ def pytest_addoption(parser):
                      help="overwrite visual/baselines/*.png with fresh screenshots instead of comparing")
 
 
+def pytest_collection_modifyitems(items):
+    """no_rerun -> flaky(reruns=0), pytest-rerunfailures' per-test override of the global --reruns."""
+    for item in items:
+        if item.get_closest_marker("no_rerun"):
+            item.add_marker(pytest.mark.flaky(reruns=0), append=False)  # prepend so it beats any other flaky marker
+
+
 @pytest.fixture
 def driver(request):
     opts = Options()
@@ -28,6 +35,9 @@ def driver(request):
 def pytest_runtest_makereport(item, call):
     """Attach a screenshot to the pytest-html report on failure (and on xfail, so known site bugs are captured)."""
     report = (yield).get_result()
+    # passed only after a rerun: flag it so the HTML report shows "flaky", not a plain pass
+    if report.when == "call" and report.passed and getattr(item, "execution_count", 1) > 1:
+        report.flaky = f"flaky (passed on attempt {item.execution_count})"
     drv = getattr(item, "_driver", None)
     if report.when == "call" and (report.failed or hasattr(report, "wasxfail")) and drv:
         extras = getattr(report, "extras", [])
@@ -37,6 +47,21 @@ def pytest_runtest_makereport(item, call):
         except WebDriverException as e:  # e.g. open alert or hung renderer; a report extra must never kill the run
             extras.append(pytest_html.extras.text(f"screenshot unavailable: {e.__class__.__name__}"))
         report.extras = extras
+
+
+def pytest_report_teststatus(report):
+    """Terminal: count passed-after-retry as 'flaky' instead of a plain pass."""
+    if getattr(report, "flaky", None):
+        return "flaky", "f", "FLAKY"
+
+
+def pytest_html_results_table_header(cells):
+    # ponytail: separate column, not a relabelled Result cell; pytest-html filters/counts on the Result text
+    cells.insert(1, "<th>Flaky</th>")
+
+
+def pytest_html_results_table_row(report, cells):
+    cells.insert(1, f'<td class="col-flaky">{getattr(report, "flaky", "")}</td>')
 
 
 pytest_html = pytest.importorskip("pytest_html")
