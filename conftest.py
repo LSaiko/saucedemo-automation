@@ -60,7 +60,16 @@ def pytest_html_results_table_header(cells):
     cells.insert(1, "<th>Flaky</th>")
 
 
+_rerun_rows_seen = set()
+
+
 def pytest_html_results_table_row(report, cells):
+    # pytest-html 4.2 re-emits a test's earlier Rerun rows when its final attempt finishes; drop the repeats
+    if report.outcome == "rerun":
+        if id(report) in _rerun_rows_seen:
+            cells.clear()  # empty cells = pytest-html skips the row
+            return
+        _rerun_rows_seen.add(id(report))
     cells.insert(1, f'<td class="col-flaky">{getattr(report, "flaky", "")}</td>')
 
 
