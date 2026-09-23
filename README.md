@@ -16,6 +16,14 @@ Selenium + pytest UI suite for [saucedemo.com](https://www.saucedemo.com): Page 
 10. Visual regression: `visual/visual_utils.py` (capture + Pillow compare, checked in isolation first), one login-page test confirmed stable on a second run, then inventory + cart, then the `--update-baselines` flag
 11. Reviewed and committed the three baselines; first cross-OS CI run showed the font-rendering mismatch, so the visual tests are Windows-only for now (see below)
 
+## Flaky Test Handling
+
+- Failing tests are retried up to 2 times with a 3 s delay ([pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures), set in `pytest.ini`); only a failure on all 3 attempts turns the run red
+- A test that passes on a retry is reported as **flaky**, not passed: `1 flaky` in the terminal summary, a Flaky column plus a Rerun row per failed attempt (with screenshot) in the HTML report
+- Validation-error tests are marked `@pytest.mark.no_rerun`; their first failure is trusted as a real bug
+- Debug locally without retries: `pytest --reruns 0`
+- Policy (flaky vs broken, why 2 reruns, what's excluded): [docs/flaky-policy.md](docs/flaky-policy.md)
+
 ## Visual regression
 
 How it works:

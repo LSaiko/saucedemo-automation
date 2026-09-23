@@ -37,6 +37,40 @@ def pytest_runtest_makereport(item, call):
         except WebDriverException as e:  # e.g. open alert or hung renderer; a report extra must never kill the run
             extras.append(pytest_html.extras.text(f"screenshot unavailable: {e.__class__.__name__}"))
         report.extras = extras
+    # execution_count comes from pytest-rerunfailures; >1 means earlier attempts failed
+    if report.when == "call" and report.passed and getattr(item, "execution_count", 1) > 1:
+        report.flaky = f"FLAKY: passed on attempt {item.execution_count}"  # plain attr, survives xdist
+
+
+def pytest_collection_modifyitems(items):
+    """no_rerun -> flaky(reruns=0); the per-test marker overrides the --reruns default from pytest.ini."""
+    for item in items:
+        if item.get_closest_marker("no_rerun"):
+            item.add_marker(pytest.mark.flaky(reruns=0))
+
+
+def pytest_report_teststatus(report):
+    """Count passed-after-retry as 'flaky' in the terminal summary instead of 'passed'."""
+    if getattr(report, "flaky", None):
+        return "flaky", "f", "FLAKY"
+
+
+def pytest_html_results_table_header(cells):
+    cells.insert(2, "<th>Flaky</th>")
+
+
+_rerun_rows_seen = set()
+
+
+def pytest_html_results_table_row(report, cells):
+    # pytest-html 4.2 re-emits every stored Rerun row after each attempt (rerunfailures logs a passed teardown
+    # per attempt, which pytest-html reads as "test finished"); keep the first emission only
+    if report.outcome == "rerun":
+        if id(report) in _rerun_rows_seen:
+            cells.clear()  # empty cells = pytest-html skips the row and its count
+            return
+        _rerun_rows_seen.add(id(report))
+    cells.insert(2, f"<td>{getattr(report, 'flaky', '')}</td>")
 
 
 pytest_html = pytest.importorskip("pytest_html")

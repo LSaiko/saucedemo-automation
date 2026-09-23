@@ -31,12 +31,14 @@ def test_full_checkout_flow(checkout):
     assert page.complete_message() == "Thank you for your order!"
 
 
+@pytest.mark.no_rerun
 def test_missing_first_name_shows_error(checkout):
     page, _ = checkout
     page.fill_info("", "Doe", "12345")
     assert "First Name is required" in page.error_message()
 
 
+@pytest.mark.no_rerun
 @pytest.mark.parametrize("first,last,zip_,msg", [
     ("John", "", "12345", "Last Name is required"),
     ("John", "Doe", "", "Postal Code is required"),
