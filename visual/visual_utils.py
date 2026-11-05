@@ -1,11 +1,13 @@
 import base64
+import sys
 from functools import reduce
 from pathlib import Path
 
 from PIL import Image, ImageChops
 from selenium.webdriver.support.ui import WebDriverWait
 
-BASELINES = Path(__file__).parent / "baselines"
+# per-OS: font rendering (DirectWrite / FreeType / CoreText) differs enough that baselines never cross platforms
+BASELINES = Path(__file__).parent / "baselines" / sys.platform  # win32 | linux | darwin
 DIFFS = Path(__file__).parent / "diffs"
 PIXEL_TOLERANCE = 32  # per-channel 0-255; absorbs anti-aliasing jitter without hiding real changes
 
