@@ -1,8 +1,8 @@
 # Functionality test plan — results
 
-**Date:** 2026-09-18 · **Commit:** `0621250` · **CI:** [run 35326622767](https://github.com/LSaiko/saucedemo-automation/actions/runs/35326622767) (headless Chrome, 7-job matrix)
+**Date:** 2026-11-05 · **CI:** [run 42056471764](https://github.com/LSaiko/saucedemo-automation/actions/runs/42056471764) (headless Chrome, 7-job matrix: Ubuntu 26.04 × Python 3.11–3.15, Windows + macOS × 3.14)
 
-**37 tests: 32 passed, 5 xfailed (known site bugs), 0 failed — 168s** on windows-latest. Linux/macOS jobs: 29 passed, 4 skipped (visual tests are Windows-only, see below), 4 xfailed — 54s.
+**37 tests: 32 passed, 5 xfailed (known site bugs), 0 failed, 0 skipped — on every one of the 7 jobs.** Visual tests now run on all three OSes against per-OS baselines. Wall time: Linux 42–57s (3.15: 111s), macOS 99s, Windows 117s.
 
 Test cases are defined in [test-cases.md](test-cases.md).
 
@@ -37,11 +37,13 @@ Two more flakes surfaced once the CI matrix grew to 7 jobs per push:
 1. `test_login_page` (visual) failed on Windows in 3 of 4 consecutive runs — the screenshot fired before saucedemo's web font finished loading, so fallback glyphs pushed the diff past 2%. Fixed by also waiting for `document.fonts.status === 'loaded'` before capture (`8ae31b3`); 0 of 5 runs since.
 2. `test_continue_shopping_preserves_cart` hit `StaleElementReferenceException` once on Ubuntu — `InventoryPage.cart_count()` read `.text` on a badge React had re-rendered. Fixed by running find + read inside `retry_wait` (`9e8fe04`).
 
-`visual/diffs/` is now uploaded as a CI artifact when the Windows job fails, so future visual flakes can be inspected rather than guessed at.
+`visual/diffs/` is uploaded as a CI artifact when any job fails, so future visual flakes can be inspected rather than guessed at.
 
 ## Visual regression
 
-Baselines were captured on Windows 11 / headless Chrome at 1280×900 and committed. On the first cross-OS run all three visual tests failed on Ubuntu and macOS purely from font rendering (DirectWrite vs FreeType/CoreText), while Windows matched within tolerance; run-to-run noise on the same machine measured 0.0% changed pixels (max 4/255 delta in product images). The tests are therefore `skipif` off Windows; per-OS baselines are the follow-up (see TODO.md).
+Original Windows-only baselines (2026-09-18): on the first cross-OS run all three visual tests failed on Ubuntu and macOS purely from font rendering (DirectWrite vs FreeType/CoreText), while Windows matched within tolerance; run-to-run noise on the same machine measured 0.0% changed pixels (max 4/255 delta in product images). The tests were `skipif` off Windows.
+
+Per-OS baselines (2026-11-05): `visual/baselines/{win32,linux,darwin}/`. Linux and macOS sets were captured on the GitHub runners themselves ([run 42056097862](https://github.com/LSaiko/saucedemo-automation/actions/runs/42056097862), `update_baselines` dispatch) and reviewed by eye before commit. Cross-Python check on Linux: the five 3.11–3.15 captures were byte-identical except py3.11's inventory page, which differed in 239 pixels (0.017%), all under the 32/255 tolerance — 0% as far as the test counts. All 3 visual tests plus the `visual_user` xfail now pass on all 7 jobs.
 
 ## Not covered
 
