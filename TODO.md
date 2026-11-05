@@ -18,13 +18,16 @@
 - [x] First grouped Dependabot PR ([#2](https://github.com/LSaiko/saucedemo-automation/pull/2)) merged: floors raised to current versions
 - [x] Per-OS visual baselines (`visual/baselines/{win32,linux,darwin}/`): all 7 CI jobs run the visual tests; Linux/macOS baselines generated on the runners via the `update_baselines` dispatch input; missing baseline fails in CI. Merged via [#3](https://github.com/LSaiko/saucedemo-automation/pull/3); 37 run, 0 skipped on every job
 
+- [x] `requirements.lock`: exact universal pins via `uv pip compile` (all OSes, Python 3.11+); CI installs it; a `lock` job fails when `requirements.txt` outgrows it (verified: ignores upstream releases, catches floor bumps)
+- [x] README Setup / Run / Coverage / CI sections + CI badge restored (lost to a failed write in `2581c80` on 2026-09-16) and updated for the venv + lock workflow
+
 ## Manual
 - [ ] Pin the repo on your GitHub profile (no API for this): github.com/LSaiko → "Customize your pins" → `saucedemo-automation`
 
 ## Recurring
-- [ ] Review/merge the weekly Dependabot PR (grouped: all pip deps in one PR, actions in another)
+- [ ] Review/merge the weekly Dependabot PR (grouped: all pip deps in one PR, actions in another). If its `lock` job fails, check out the PR branch, run `uv pip compile requirements.txt --universal --python-version 3.11 -o requirements.lock`, commit, push
 - [ ] Check the Monday scheduled CI run; a red run with no commit means saucedemo, Chrome, or the runner image changed (visual failure on one OS only → regenerate that OS's baselines via the `update_baselines` dispatch)
 
 ## Optional / when needed
-- [ ] `requirements.lock` (pip-compile) if reproducible runs ever matter more than testing against today's stack
+- [ ] Refresh the lock to latest occasionally: same command plus `--upgrade` (Dependabot only moves the floors)
 - [ ] Move credentials to `.env` (gitignored) if real accounts are ever used; saucedemo's public ones are fine hardcoded

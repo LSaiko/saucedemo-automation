@@ -1,6 +1,76 @@
 # saucedemo-automation
 
+[![CI](https://github.com/LSaiko/saucedemo-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/LSaiko/saucedemo-automation/actions/workflows/ci.yml)
+
 Selenium + pytest UI suite for [saucedemo.com](https://www.saucedemo.com): Page Objects, headless Chrome, pytest-html with screenshot-on-failure, pixel-diff visual regression. **37 tests: 32 pass, 5 xfail (known site bugs)**; cases in [docs/test-cases.md](docs/test-cases.md), latest results in [docs/test-results.md](docs/test-results.md).
+
+## What it demonstrates
+
+- **Page Object Model**: one class per page in `pages/`, locators as class constants, actions as methods. Tests call page objects only, never raw Selenium
+- **Explicit waits only**: every lookup goes through `WebDriverWait` + `expected_conditions` in `pages/base_page.py`; no `time.sleep()`. Clicks retry through stale/intercepted elements from React re-renders
+- **Function-scoped `driver` fixture** (`conftest.py`): fresh headless Chrome per test, quit afterwards
+- **HTML reporting** via pytest-html, with a screenshot + URL attached on every failure and expected failure
+- **Visual regression** with per-OS baselines, **flaky-test retries**, and a **7-job CI matrix** (sections below)
+
+## Coverage
+
+| File | Scenarios |
+|---|---|
+| `tests/test_login.py` | valid login, locked-out user, wrong password, empty username, empty password, performance_glitch_user |
+| `tests/test_inventory.py` | add/remove updates cart badge, sort A–Z / Z–A / price low–high / high–low, item detail + back, logout |
+| `tests/test_cart.py` | cart contents, remove item, continue shopping keeps cart, empty-cart checkout |
+| `tests/test_checkout.py` | full checkout with totals verified, missing first/last/zip validation, cancel from step one and overview, back home clears cart |
+| `tests/test_personas.py` | problem_user / error_user / visual_user: login and add to cart, plus their known bugs as strict xfails |
+| `tests/visual/` | login, inventory, cart-with-items screenshots vs baselines; visual_user layout as a strict xfail |
+
+## Setup
+
+Requires Python 3.11+ and Google Chrome; `webdriver-manager` fetches the matching chromedriver.
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate        # Windows  (source .venv/bin/activate on macOS/Linux)
+pip install -r requirements.lock
+```
+
+Use a venv: the lock pins exact versions (e.g. Pillow 13) that can conflict with other projects in a shared Python.
+
+Dependencies:
+
+- `requirements.txt`: the minimum versions, edited by hand and bumped by Dependabot
+- `requirements.lock`: exact pins for every package including transitive ones, for all OSes and Python 3.11+. CI installs this
+- After changing `requirements.txt`, regenerate the lock (needs [uv](https://docs.astral.sh/uv/)), then commit both:
+
+```bash
+uv pip compile requirements.txt --universal --python-version 3.11 -o requirements.lock
+```
+
+- The CI `lock` job fails if the lock is out of date with `requirements.txt`. Newer upstream releases alone never trigger it: uv keeps existing pins unless the minimums force a change
+- To pull in newer versions on purpose: add `--upgrade` to the command above
+
+## Run
+
+```bash
+pytest
+```
+
+`pytest.ini` adds `-n auto` (parallel via pytest-xdist), `--reruns 2`, and `--html=reports/report.html --self-contained-html`, so every run uses all cores and writes a single-file report to `reports/report.html`. Open it in a browser.
+
+```bash
+pytest tests/test_login.py -v     # one file, verbose
+pytest -n 0 --reruns 0            # serial, no retries: for debugging
+```
+
+To watch the browser, remove `--headless=new` in `conftest.py` and run serially.
+
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push and PR, plus weekly (Monday 06:17 UTC) so changes to saucedemo, Chrome or the runner images surface without a push:
+
+- `test`: Python 3.11–3.15 on Ubuntu, plus Windows and macOS on 3.14. Each job uploads its `report.html`; failing jobs also upload `visual/diffs/`
+- `lock`: fails if `requirements.lock` is out of date (see Setup)
+- Manual run with **update_baselines** regenerates visual baselines on every runner (see Visual regression)
+- Dependabot opens one grouped weekly PR for pip and one for GitHub Actions
 
 ## How this was built
 
