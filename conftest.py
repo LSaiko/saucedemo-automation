@@ -18,14 +18,20 @@ def pytest_collection_modifyitems(items):
             item.add_marker(pytest.mark.flaky(reruns=0), append=False)  # prepend so it beats any other flaky marker
 
 
+@pytest.fixture(scope="session")
+def chromedriver_path():
+    """Resolve chromedriver once per session, not once per test: it is a network call to GitHub."""
+    return ChromeDriverManager().install()
+
+
 @pytest.fixture
-def driver(request):
+def driver(request, chromedriver_path):
     opts = Options()
     opts.add_argument("--headless=new")
     opts.add_argument("--window-size=1280,900")
     # saucedemo triggers Chrome's password-leak popup on login; disable it
     opts.add_experimental_option("prefs", {"credentials_enable_service": False, "profile.password_manager_leak_detection": False})
-    drv = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
+    drv = webdriver.Chrome(service=Service(chromedriver_path), options=opts)
     request.node._driver = drv  # for the screenshot hook below
     yield drv
     drv.quit()
