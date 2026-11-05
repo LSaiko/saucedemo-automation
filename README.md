@@ -14,7 +14,7 @@ Selenium + pytest UI suite for [saucedemo.com](https://www.saucedemo.com): Page 
 8. Pushed to GitHub and pinned the repo
 9. Parallel runs via pytest-xdist; CI matrix Python 3.11-3.15 on Linux + Windows/macOS on 3.14
 10. Visual regression: `visual/visual_utils.py` (capture + Pillow compare, checked in isolation first), one login-page test confirmed stable on a second run, then inventory + cart, then the `--update-baselines` flag
-11. Reviewed and committed the three baselines; first cross-OS CI run showed the font-rendering mismatch, so the visual tests are Windows-only for now (see below)
+11. Reviewed and committed the three baselines; first cross-OS CI run showed the font-rendering mismatch, fixed later with per-OS baseline dirs (see below)
 12. Flaky-test retries via pytest-rerunfailures, with a `no_rerun` opt-out for validation tests (see below)
 
 ## Flaky Test Handling
@@ -32,7 +32,7 @@ How it works:
 1. Selenium (the `driver` fixture + Page Objects) drives the page to a state
 2. `capture_screenshot` takes a full-page PNG via Chrome DevTools `Page.captureScreenshot` with `captureBeyondViewport`
 3. `compare_screenshots` does a Pillow pixel diff against the baseline
-4. Baselines live in `visual/baselines/` (committed); each run writes the current shot plus a `<name>_diff.png` mask (white = changed pixels) to `visual/diffs/` (gitignored)
+4. Baselines live in `visual/baselines/<sys.platform>/` — `win32/`, `linux/`, `darwin/` — committed, one set per OS; each run writes the current shot plus a `<name>_diff.png` mask (white = changed pixels) to `visual/diffs/` (gitignored)
 5. Tests (`tests/visual/`): login page, inventory page, cart with two items, plus `visual_user`'s inventory compared against the `standard_user` baseline (`xfail(strict=True)` — the persona's layout is deliberately broken and the diff catches it at ~3% changed)
 
 Threshold:
@@ -45,14 +45,15 @@ Threshold:
 Running:
 
 1. `pytest tests/visual` (xdist is on by default via `pytest.ini`; `-n0` runs serially)
-2. No baseline yet: the first run writes it and the test is SKIPPED with a message. Review the PNG, then commit it
-3. Intentional UI change: `pytest tests/visual --update-baselines`, eyeball the new PNGs in `visual/baselines/`, commit them
-4. The flag overwrites the baselines; it does not blindly accept diffs. The PNG diff in the PR is the review artifact
+2. No baseline yet: locally, the first run writes it and the test is SKIPPED with a message. Review the PNG, then commit it. In CI a missing baseline FAILS, so an OS can't silently lose coverage
+3. Intentional UI change, your own OS: `pytest tests/visual --update-baselines`, eyeball the new PNGs, commit them
+4. Intentional UI change, all OSes: Actions → CI → Run workflow → tick **update_baselines** (or `gh workflow run ci.yml -f update_baselines=true`). Every runner regenerates and uploads a `baselines-<os>-py<ver>` artifact; download, review, copy each OS's dir into `visual/baselines/`, commit
+5. The flag overwrites the baselines; it does not blindly accept diffs. The PNG diff in the PR is the review artifact
 
-Known limitation - fonts:
+Why per-OS baselines:
 
-- Font rendering differs between local (Windows, DirectWrite) and CI (Ubuntu, FreeType): glyph shapes, hinting and subpixel positioning all differ, so baselines from one OS will not match another pixel-for-pixel. Text-heavy pages can exceed 2% from fonts alone
-- Mitigations: generate baselines on the same OS/Chrome that runs the comparison (regenerate in CI, or keep per-OS baseline dirs), or pin the Chrome version
-- Current baselines: Windows 11 / Chrome headless at 1280x900. The visual tests are therefore `skipif(sys.platform != "win32")`; in CI only the Windows job runs them
-- Future: per-OS baseline dirs (`visual/baselines/<platform>/`, generated once per runner with `--update-baselines`) would give Linux/macOS coverage too
+- Font rendering differs by OS (Windows DirectWrite, Linux FreeType, macOS CoreText): glyph shapes, hinting and subpixel positioning all differ, so a baseline from one OS won't match another pixel-for-pixel. Text-heavy pages can exceed 2% from fonts alone
+- So each OS compares only against baselines captured on that OS. `win32/` came from Windows 11 locally; `linux/` and `darwin/` were captured on the GitHub runners themselves (Ubuntu 26.04, macOS), all Chrome headless at 1280x900
+- Python version doesn't affect rendering: the five Linux jobs (3.11–3.15) produce byte-identical captures apart from a few hundred sub-tolerance anti-aliasing pixels, and all share `linux/`
+- A runner-image or Chrome major bump can shift rendering enough to fail; that's what the weekly scheduled run catches. Regenerate with the `update_baselines` dispatch
 - The saucedemo footer shows the current year, so baselines drift by a handful of pixels every January. Well under the threshold; regenerate if it ever tips over

@@ -16,14 +16,15 @@
 - [x] Repo topics + description set; tagged and released [v1.0.0](https://github.com/LSaiko/saucedemo-automation/releases/tag/v1.0.0)
 - [x] Maintenance pass 2026-11-05 (suite still green after 6 weeks idle): weekly CI cron + `workflow_dispatch`, Dependabot (pip + actions), MIT LICENSE, dependency floors raised to installed majors, chromedriver resolved once per session instead of per test, stale branch pruned. Verified on Ubuntu 26.04 runners and Python 3.15
 
+- [x] Per-OS visual baselines (`visual/baselines/{win32,linux,darwin}/`): all 7 CI jobs run the visual tests; Linux/macOS baselines generated on the runners via the `update_baselines` dispatch input; missing baseline fails in CI
+
 ## Manual
 - [ ] Pin the repo on your GitHub profile (no API for this): github.com/LSaiko → "Customize your pins" → `saucedemo-automation`
 
 ## Recurring
 - [ ] Review/merge the weekly Dependabot PR (grouped: all pip deps in one PR, actions in another)
-- [ ] Check the Monday scheduled CI run; a red run with no commit means saucedemo, Chrome, or the runner image changed
+- [ ] Check the Monday scheduled CI run; a red run with no commit means saucedemo, Chrome, or the runner image changed (visual failure on one OS only → regenerate that OS's baselines via the `update_baselines` dispatch)
 
 ## Optional / when needed
 - [ ] `requirements.lock` (pip-compile) if reproducible runs ever matter more than testing against today's stack
 - [ ] Move credentials to `.env` (gitignored) if real accounts are ever used; saucedemo's public ones are fine hardcoded
-- [ ] Per-OS baseline dirs (`visual/baselines/<platform>/`) so Linux/macOS CI jobs run the visual tests too (currently `skipif` win32 only)
