@@ -1,4 +1,4 @@
-import sys
+import os
 
 import pytest
 from pages.login_page import LoginPage
@@ -6,18 +6,22 @@ from pages.inventory_page import InventoryPage
 from pages.cart_page import CartPage
 from visual.visual_utils import BASELINES, capture_screenshot, compare_screenshots
 
-# ponytail: baselines captured on Windows only; per-OS baseline dirs when Linux/mac visual coverage is needed (README)
-pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="visual baselines captured on Windows; see README")
 
 
 @pytest.fixture
 def check_visual(driver, request):
     def _check(name, baseline_name=None):
         baseline = BASELINES / f"{baseline_name or name}.png"
-        if request.config.getoption("--update-baselines") and not baseline_name:
+        updating = request.config.getoption("--update-baselines")
+        if baseline_name and not baseline.exists():
+            # never let a borrowed baseline be written from this test's (deliberately different) page
+            pytest.skip(f"borrowed baseline {baseline} missing")
+        if updating and not baseline_name:
             baseline.unlink(missing_ok=True)  # capture_screenshot then writes a fresh baseline
         current = capture_screenshot(driver, name, baseline)
         if current == baseline:
+            if os.environ.get("CI") and not updating:
+                pytest.fail(f"no {BASELINES.name} baseline for {name}; generate with the update_baselines CI run")
             pytest.skip(f"no baseline existed; wrote {baseline} - review and commit it")
         assert compare_screenshots(baseline, current), f"{name} differs from baseline; see {current.parent}"
     return _check

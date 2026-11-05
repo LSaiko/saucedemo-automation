@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: "17 6 * * 1"
   workflow_dispatch:
+    inputs:
+      update_baselines:
+        description: "Regenerate visual baselines on each runner and upload them (review, then commit)"
+        type: boolean
+        default: false
 
 jobs:
   test:
@@ -28,13 +33,23 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - run: pytest
+        if: ${{ !inputs.update_baselines }}
+      # serial + no reruns: one clean capture per page; visual tests only
+      - run: pytest tests/visual --update-baselines -n0 --reruns 0
+        if: ${{ inputs.update_baselines }}
+      - uses: actions/upload-artifact@v7
+        if: ${{ inputs.update_baselines }}
+        with:
+          name: baselines-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: visual/baselines/
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: pytest-html-report-${{ matrix.os }}-py${{ matrix.python-version }}
           path: reports/report.html
       - uses: actions/upload-artifact@v7
-        if: failure() && matrix.os == 'windows-latest'
+        if: failure()
         with:
-          name: visual-diffs
+          name: visual-diffs-${{ matrix.os }}-py${{ matrix.python-version }}
           path: visual/diffs/
+          if-no-files-found: ignore
